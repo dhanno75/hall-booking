@@ -86,7 +86,77 @@ app.post("/book_room", async (req, res) => {
   }
 });
 
-app.get("/allRooms", async (req, res) => {});
+// Get all rooms which are booked
+app.get("/allRooms", async (req, res) => {
+  const bookedRooms = await client
+    .db("hallBooking")
+    .collection("book_room")
+    .aggregate([
+      {
+        $lookup: {
+          from: "room",
+          localField: "roomID",
+          foreignField: "roomID",
+          as: "allRooms",
+        },
+      },
+      {
+        $project: {
+          customerName: 1,
+          Date: 1,
+          startTime: 1,
+          endTime: 1,
+          "allRooms.bookedStatus": 1,
+          "allRooms.roomName": 1,
+        },
+      },
+      {
+        $match: {
+          "allRooms.bookedStatus": true,
+        },
+      },
+    ]);
+
+  const result = await bookedRooms.toArray();
+
+  res.status(200).json({
+    status: "success",
+    data: result,
+  });
+});
+
+// All customers with booked data
+app.get("/allCustomers", async (req, res) => {
+  const customersData = await client
+    .db("hallBooking")
+    .collection("book_room")
+    .aggregate([
+      {
+        $lookup: {
+          from: "room",
+          localField: "roomID",
+          foreignField: "roomID",
+          as: "allRooms",
+        },
+      },
+      {
+        $project: {
+          customerName: 1,
+          Date: 1,
+          startTime: 1,
+          endTime: 1,
+          "allRooms.roomName": 1,
+        },
+      },
+    ]);
+
+  const result = await customersData.toArray();
+
+  res.status(200).json({
+    status: "success",
+    data: result,
+  });
+});
 
 app.listen(PORT, () => console.log(`The server started in port ${PORT} ✨✨`));
 
