@@ -34,16 +34,6 @@ app.post("/create_room", async (req, res) => {
   });
 });
 
-app.delete("/delete_broom/:id", async (req, res) => {
-  let { id } = req.params;
-  const deleteRoom = await client
-    .db("hallBooking")
-    .collection("book_room")
-    .deleteOne({ _id: ObjectId(id) });
-
-  res.status(404).send("No such movie found");
-});
-
 // Booking a room
 app.post("/book_room", async (req, res) => {
   const data = req.body;
